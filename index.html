@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Banco Social Pi | BSPI - Consultoria Eleva</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Ethers.js e Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a1929; /* Azul escuro da Consultoria Eleva */
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header estilo Consultoria Eleva */
+        .top-bar {
+            background: rgba(10, 25, 41, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 24px;
+        }
+
+        .top-bar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ff9800; /* Laranja da Consultoria Eleva */
+            background: rgba(255, 152, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #ff9800;
+        }
+
+        .wallet-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255, 152, 0, 0.5);
+            color: #ff9800;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #ff9800;
+            color: #0a1929;
+            border-color: #ff9800;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            border-color: rgba(255,255,255,0.2);
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            border-color: #ff9800;
+            color: #ff9800;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Stats Cards estilo Eleva */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 152, 0, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 152, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .stat-unit {
+            font-size: 1rem;
+            color: #ff9800;
+            margin-left: 4px;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            color: #10b981;
+            background: rgba(16,185,129,0.1);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        /* Tabs estilo Eleva */
+        .tabs-container {
+            background: rgba(255,255,255,0.02);
+            border-radius: 32px;
+            padding: 28px;
+            border: 1px solid rgba(255,152,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid rgba(255,152,0,0.2);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 24px;
+            border-radius: 30px;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: rgba(255,152,0,0.1);
+            color: #ff9800;
+            border-color: rgba(255,152,0,0.3);
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 28px;
+        }
+
+        @media (max-width: 1000px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,152,0,0.1);
+            border-radius: 28px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #ff9800;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: #e2e8f0;
+        }
+
+        /* Formulários */
+        .input-group {
+            background: rgba(0,0,0,0.3);
+            border-radius: 60px;
+            padding: 8px 8px 8px 24px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255,152,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .input-group span {
+            font-size: 1.2rem;
+            color: #ff9800;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .input-group input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            width: 100%;
+            outline: none;
+        }
+
+        .input-group-vertical {
+            margin-bottom: 20px;
+        }
+
+        .input-group-vertical label {
+            display: block;
+            margin-bottom: 6px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .input-group-vertical input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,152,0,0.2);
+            border-radius: 30px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        /* Rankings */
+        .ranking-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,152,0,0.1);
+        }
+
+        .ranking-position {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,152,0,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ff9800;
+        }
+
+        .ranking-address {
+            font-family: monospace;
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .ranking-value {
+            font-weight: 700;
+            color: #ff9800;
+        }
+
+        /* Feed */
+        .feed-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .feed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,152,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        .feed-wallet {
+            background: rgba(255,152,0,0.1);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-family: monospace;
+        }
+
+        .feed-amount {
+            color: #ff9800;
+            font-weight: 600;
+        }
+
+        /* Gráfico */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Seção Social */
+        .social-section {
+            background: linear-gradient(145deg, rgba(255,152,0,0.05), transparent);
+            border-radius: 32px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid rgba(255,152,0,0.2);
+            text-align: center;
+        }
+
+        .social-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 16px;
+            color: #ff9800;
+        }
+
+        .social-section p {
+            max-width: 700px;
+            margin: 0 auto 24px;
+            color: #cbd5e1;
+            font-size: 1.1rem;
+        }
+
+        .school-badge {
+            display: inline-block;
+            background: rgba(255,152,0,0.1);
+            padding: 12px 32px;
+            border-radius: 60px;
+            border: 1px solid rgba(255,152,0,0.3);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .school-badge:hover {
+            background: rgba(255,152,0,0.2);
+        }
+
+        footer {
+            margin-top: 48px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,152,0,0.1);
+            padding-top: 24px;
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+        }
+
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-container">
+            <div class="logo-area">
+                <div class="logo-icon">π</div>
+                <div class="logo-text">
+                    <h1>Banco Social Pi</h1>
+                    <p>by Consultoria Eleva</p>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link">INÍCIO</a>
+                <a href="#" class="nav-link">SOBRE O BSPI</a>
+                <a href="#" class="nav-link">A ELEVA</a>
+            </div>
+            <div class="wallet-area">
+                <button class="btn" id="connectWalletBtn">Conectar Carteira</button>
+                <button class="btn btn-secondary" id="addTokenBtn" style="display: none;">➕ Adicionar BSPI</button>
+                <span style="color: #ff9800; font-weight: 600;">Amoy</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Seu Saldo</div>
+                <div class="stat-value" id="userBalance">0.00 <span class="stat-unit">BSPI</span></div>
+                <div class="stat-change" id="userBalanceUsd">≈ R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Queimado</div>
+                <div class="stat-value" id="totalBurned">0 <span class="stat-unit">π</span></div>
+                <div class="stat-change" id="burnPercentage">-0% supply</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Preço BSPI</div>
+                <div class="stat-value" id="tokenPrice">R$ 3,14</div>
+                <div class="stat-change">+15,9% (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Holders</div>
+                <div class="stat-value" id="holdersCount">0</div>
+                <div class="stat-change">ativos</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="dashboard">📊 Dashboard</div>
+                <div class="tab" data-tab="transfer">💸 Transferir</div>
+                <div class="tab" data-tab="burn">🔥 Queimar</div>
+                <div class="tab" data-tab="ranking">🏆 Ranking</div>
+                <div class="tab" data-tab="history">📜 Histórico</div>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="content-grid">
+                    <div>
+                        <div class="card">
+                            <h2>📈 Queima Acumulada</h2>
+                            <div class="chart-container">
+                                <canvas id="burnChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h2>📡 Atividade Recente</h2>
+                            <div id="feedContainer" class="feed-list">
+                                <div class="loading">Carregando atividades...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card">
+                            <h2>ℹ️ Sobre o BSPI</h2>
+                            <p style="margin-bottom: 20px; color: #cbd5e1;">
+                                Token social da <strong>Consultoria Eleva</strong> em parceria com a <strong>Escola Sathya Sai</strong>, baseado em valores humanos.
+                            </p>
+                            <ul style="list-style: none;">
+                                <li style="margin-bottom: 12px;">✅ Supply total: 31.416.000 BSPI</li>
+                                <li style="margin-bottom: 12px;">✅ Rede: Polygon Amoy</li>
+                                <li style="margin-bottom: 12px;">✅ Contrato: <span id="contractShort"></span></li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>🏦 Fundo Social</h3>
+                            <div class="stat-value" id="schoolReserves">0 BSPI</div>
+                            <p style="color: #94a3b8; margin-top: 8px;">Reservado para a Escola Sathya Sai</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transferir -->
+            <div id="tab-transfer" class="tab-content hidden">
+                <div class="content-grid">
+                    <div class="card">
+                        <h2>💸 Enviar BSPI</h2>
+                        <div class="input-group-vertical">
+                            <label>Endereço de destino</label>
+                            <input type="text" id="transferAddress" placeholder="0x...">
+                        </div>
+                        <div class="input-group">
+                            <span>π</span>
+                            <input type="number" id="transferAmount" placeholder="Quantidade" min="0" step="any" value="3.14">
+                        </div>
+                        <button class="btn btn-block" id="transferBtn" disabled>Transferir Tokens</button>
+                        <p id="transferFeedback" style="margin-top: 16px; color: #94a3b8;"></p>
+                    </div>
+                    <div class="card">
+                        <h3>📋 Informações</h3>
+                        <p style="color: #cbd5e1; margin-bottom: 16px;">
+                            Taxa: <strong>0%</strong> (apenas gas da rede)
+                        </p>
+                        <p style="color: #cbd5e1;">
+                            Saldo disponível: <span id="availableBalance">0</span> BSPI
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queimar -->
+            <div id="tab-burn" class="tab-content hidden">
+                <div class="content-grid">
+                    <div class="card">
+                        <h2>🔥 Queimar Tokens</h2>
+                        <p style="color: #94a3b8; margin-bottom: 24px;">
+                            Remova permanentemente tokens BSPI de circulação.
+                        </p>
+                        <div class="input-group">
+                            <span>π</span>
+                            <input type="number" id="burnAmount" placeholder="3.14" min="0" step="any" value="3.14">
+                        </div>
+                        <button class="btn btn-block" id="burnBtn" disabled>Queimar Tokens</button>
+                        <div style="margin-top: 20px; color: #ef4444; background: rgba(239,68,68,0.1); padding: 12px; border-radius: 30px;">
+                            ⚠️ Ação irreversível.
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>📊 Estatísticas</h3>
+                        <div style="margin-bottom: 16px;">
+                            <div style="color: #94a3b8;">Total queimado:</div>
+                            <div class="stat-value" id="burnStatTotal">0 BSPI</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Sua contribuição:</div>
+                            <div class="stat-value" id="userBurned">0 BSPI</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking -->
+            <div id="tab-ranking" class="tab-content hidden">
+                <div class="content-grid">
+                    <div class="card">
+                        <h2>🏆 Maiores Detentores</h2>
+                        <div id="holderRanking" class="ranking-list">
+                            <div class="loading">Carregando ranking...</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>🔥 Maiores Queimadores</h2>
+                        <div id="burnerRanking" class="ranking-list">
+                            <div class="loading">Carregando ranking...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico -->
+            <div id="tab-history" class="tab-content hidden">
+                <div class="card">
+                    <h2>📜 Seu Histórico</h2>
+                    <div id="historyContainer" class="history-list">
+                        <div class="loading">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção Social -->
+        <div class="social-section">
+            <h2>✨ Educação e Valores Humanos</h2>
+            <p>
+                O Banco Social Pi é uma iniciativa da <strong>Consultoria Eleva</strong> para apoiar a <strong>Escola Sathya Sai</strong>, 
+                que transforma vidas através da educação baseada em valores.
+            </p>
+            <div class="school-badge" onclick="window.open('https://www.escolasathyasai.org.br', '_blank')">
+                🌍 Parceiro Oficial da Escola Sathya Sai
+            </div>
+        </div>
+
+        <footer>
+            <p>Banco Social Pi © 2026 | Consultoria Eleva | π = 3,14159...</p>
+            <p style="font-size: 0.8rem; margin-top: 8px;">Contrato: <span id="contractAddressDisplay"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // ==============================================
+        // CONFIGURAÇÕES - PREENCHA AQUI
+        // ==============================================
+        const CONTRACT_ADDRESS = "0x..."; // ENDEREÇO DO SEU CONTRATO NA AMOY
+        const SUBGRAPH_URL = ""; // URL DO SUBGRAPH (se tiver)
+
+        const CONTRACT_ABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)",
+            "function decimals() view returns (uint8)",
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function transfer(address to, uint256 amount) returns (bool)",
+            "function burn(uint256 amount) external",
+            "event Transfer(address indexed from, address indexed to, uint256 value)",
+            "event TokensQueimados(address indexed queimador, uint256 quantidade)"
+        ];
+
+        // ==============================================
+        // ESTADO GLOBAL
+        // ==============================================
+        let provider, signer, contract;
+        let userAddress = null;
+        const INITIAL_SUPPLY = 31416000;
+        let burnChart = null;
+
+        // Elementos DOM
+        const connectBtn = document.getElementById('connectWalletBtn');
+        const addTokenBtn = document.getElementById('addTokenBtn');
+        const burnBtn = document.getElementById('burnBtn');
+        const transferBtn = document.getElementById('transferBtn');
+        const burnAmountInput = document.getElementById('burnAmount');
+        const transferAmountInput = document.getElementById('transferAmount');
+        const transferAddressInput = document.getElementById('transferAddress');
+        const userBalanceEl = document.getElementById('userBalance');
+        const userBalanceUsdEl = document.getElementById('userBalanceUsd');
+        const totalBurnedEl = document.getElementById('totalBurned');
+        const burnPercentageEl = document.getElementById('burnPercentage');
+        const burnStatTotal = document.getElementById('burnStatTotal');
+        const userBurnedEl = document.getElementById('userBurned');
+        const feedContainer = document.getElementById('feedContainer');
+        const holderRankingEl = document.getElementById('holderRanking');
+        const burnerRankingEl = document.getElementById('burnerRanking');
+        const historyContainer = document.getElementById('historyContainer');
+        const contractAddressDisplay = document.getElementById('contractAddressDisplay');
+        const contractShort = document.getElementById('contractShort');
+        const availableBalance = document.getElementById('availableBalance');
+        const schoolReserves = document.getElementById('schoolReserves');
+        const holdersCount = document.getElementById('holdersCount');
+
+        if (contractAddressDisplay) {
+            contractAddressDisplay.textContent = CONTRACT_ADDRESS;
+            contractShort.textContent = CONTRACT_ADDRESS.slice(0,6)+'...'+CONTRACT_ADDRESS.slice(-4);
+        }
+
+        // Utilitários
+        const formatAmount = (amount, decimals=18) => ethers.utils.formatUnits(amount, decimals);
+        const parseAmount = (amount, decimals=18) => ethers.utils.parseUnits(amount.toString(), decimals);
+        const truncateAddress = (addr) => addr ? addr.slice(0,6)+'...'+addr.slice(-4) : '';
+
+        // Conexão com a carteira (Polygon Amoy)
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert('MetaMask não encontrada!');
+                return;
+            }
+            try {
+                connectBtn.disabled = true;
+                connectBtn.textContent = 'Conectando...';
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+
+                const network = await provider.getNetwork();
+                if (network.chainId !== 80002) {
+                    alert('Conecte-se à Polygon Amoy.');
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x13882' }],
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x13882',
+                                    chainName: 'Polygon Amoy',
+                                    nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                                    rpcUrls: ['https://rpc-amoy.polygon.technology/'],
+                                    blockExplorerUrls: ['https://amoy.polygonscan.com/']
+                                }]
+                            });
+                        }
+                    }
+                }
+
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                connectBtn.textContent = `Conectado: ${truncateAddress(userAddress)}`;
+                addTokenBtn.style.display = 'inline-block';
+
+                await updateBalance();
+                await loadTotalBurned();
+                await loadUserBurned();
+                await loadRankings();
+                await loadFeed();
+                await setupEventListeners();
+
+                burnBtn.disabled = false;
+                transferBtn.disabled = false;
+                burnBtn.textContent = 'Queimar Tokens';
+                transferBtn.textContent = 'Transferir Tokens';
+            } catch (error) {
+                console.error(error);
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Conectar Carteira';
+            }
+        }
+
+        async function updateBalance() {
+            if (!contract || !userAddress) return;
+            try {
+                const balance = await contract.balanceOf(userAddress);
+                const decimals = await contract.decimals();
+                const formatted = formatAmount(balance, decimals);
+                userBalanceEl.innerHTML = `${parseFloat(formatted).toFixed(2)} <span class="stat-unit">BSPI</span>`;
+                if (availableBalance) availableBalance.textContent = parseFloat(formatted).toFixed(2);
+                const brlValue = parseFloat(formatted) * 3.14;
+                userBalanceUsdEl.textContent = `≈ R$ ${brlValue.toFixed(2)}`;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadTotalBurned() {
+            if (!contract) return;
+            try {
+                const totalSupply = await contract.totalSupply();
+                const decimals = await contract.decimals();
+                const totalSupplyFormatted = parseFloat(formatAmount(totalSupply, decimals));
+                const burned = INITIAL_SUPPLY - totalSupplyFormatted;
+                totalBurnedEl.textContent = burned.toLocaleString(undefined, { maximumFractionDigits: 0 });
+                if (burnStatTotal) burnStatTotal.textContent = burned.toLocaleString() + ' BSPI';
+                const percentage = (burned / INITIAL_SUPPLY * 100).toFixed(2);
+                burnPercentageEl.textContent = `-${percentage}% supply`;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadUserBurned() {
+            if (!contract || !userAddress) return;
+            try {
+                const filter = contract.filters.TokensQueimados(userAddress);
+                const events = await contract.queryFilter(filter, -10000);
+                let total = 0;
+                const decimals = await contract.decimals();
+                events.forEach(event => {
+                    total += parseFloat(formatAmount(event.args.quantidade, decimals));
+                });
+                if (userBurnedEl) userBurnedEl.textContent = total.toFixed(2) + ' BSPI';
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadRankings() {
+            if (!holderRankingEl || !burnerRankingEl) return;
+            // Mock data por enquanto
+            const mockHolders = [
+                { id: '0x8a2...d3eF', balance: '125000' },
+                { id: '0x3f1...b9cA', balance: '98000' },
+                { id: '0x7b2...a11e', balance: '75400' },
+            ];
+            const mockBurners = [
+                { queimador: '0x8a2...d3eF', quantidade: '15000' },
+                { queimador: '0x7b2...a11e', quantidade: '12400' },
+            ];
+            renderHolderRanking(mockHolders);
+            renderBurnerRanking(mockBurners);
+            if (holdersCount) holdersCount.textContent = '42';
+        }
+
+        function renderHolderRanking(holders) {
+            holderRankingEl.innerHTML = '';
+            holders.forEach((h, i) => {
+                const item = document.createElement('div');
+                item.className = 'ranking-item';
+                item.innerHTML = `
+                    <span class="ranking-position">${i+1}</span>
+                    <span class="ranking-address">${h.id}</span>
+                    <span class="ranking-value">${Number(h.balance).toLocaleString()} BSPI</span>
+                `;
+                holderRankingEl.appendChild(item);
+            });
+        }
+
+        function renderBurnerRanking(burners) {
+            burnerRankingEl.innerHTML = '';
+            burners.forEach((b, i) => {
+                const item = document.createElement('div');
+                item.className = 'ranking-item';
+                item.innerHTML = `
+                    <span class="ranking-position">${i+1}</span>
+                    <span class="ranking-address">${b.queimador}</span>
+                    <span class="ranking-value">${Number(b.quantidade).toLocaleString()} BSPI</span>
+                `;
+                burnerRankingEl.appendChild(item);
+            });
+        }
+
+        async function loadFeed() {
+            if (!contract) return;
+            try {
+                const filter = contract.filters.TokensQueimados();
+                const events = await contract.queryFilter(filter, -10000);
+                events.reverse();
+                const decimals = await contract.decimals();
+                feedContainer.innerHTML = '';
+                if (events.length === 0) {
+                    feedContainer.innerHTML = '<div class="loading">Nenhuma queima recente.</div>';
+                    return;
+                }
+                events.slice(0,10).forEach(e => {
+                    const amount = formatAmount(e.args.quantidade, decimals);
+                    const from = e.args.queimador;
+                    const item = document.createElement('div');
+                    item.className = 'feed-item';
+                    item.innerHTML = `
+                        <span class="feed-wallet">${truncateAddress(from)}</span>
+                        <span>queimou <span class="feed-amount">${parseFloat(amount).toFixed(2)} BSPI</span></span>
+                        <span>bloco ${e.blockNumber}</span>
+                    `;
+                    feedContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error(error);
+                feedContainer.innerHTML = '<div class="error">Erro ao carregar feed.</div>';
+            }
+        }
+
+        function addFeedItem(from, amount) {
+            const item = document.createElement('div');
+            item.className = 'feed-item';
+            item.style.opacity = '0.7';
+            item.innerHTML = `
+                <span class="feed-wallet">${truncateAddress(from)}</span>
+                <span>queimou <span class="feed-amount">${parseFloat(amount).toFixed(2)} BSPI</span></span>
+                <span>agora</span>
+            `;
+            feedContainer.insertBefore(item, feedContainer.firstChild);
+            if (feedContainer.children.length > 10) feedContainer.removeChild(feedContainer.lastChild);
+        }
+
+        async function setupEventListeners() {
+            if (!contract) return;
+            contract.on('TokensQueimados', async (queimador, quantidade, event) => {
+                const decimals = await contract.decimals();
+                const amount = formatAmount(quantidade, decimals);
+                addFeedItem(queimador, amount);
+                await loadTotalBurned();
+                if (queimador.toLowerCase() === userAddress?.toLowerCase()) {
+                    await updateBalance();
+                    await loadUserBurned();
+                }
+            });
+        }
+
+        function updateBurnChart() {
+            if (!burnChart) {
+                const ctx = document.getElementById('burnChart').getContext('2d');
+                burnChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                        datasets: [{
+                            label: 'Tokens Queimados',
+                            data: [12000, 19000, 27000, 31400],
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255,152,0,0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        async function burnTokens() {
+            if (!contract || !userAddress) { alert('Conecte sua carteira.'); return; }
+            const amount = burnAmountInput.value;
+            if (!amount || parseFloat(amount) <= 0) { alert('Quantidade inválida.'); return; }
+            try {
+                burnBtn.disabled = true;
+                burnBtn.textContent = 'Queimando...';
+                const decimals = await contract.decimals();
+                const amountWei = parseAmount(amount, decimals);
+                const balance = await contract.balanceOf(userAddress);
+                if (balance.lt(amountWei)) { alert('Saldo insuficiente.'); return; }
+                const tx = await contract.burn(amountWei);
+                await tx.wait();
+                alert(`Sucesso! ${amount} BSPI queimados.`);
+                await updateBalance();
+                await loadTotalBurned();
+                await loadUserBurned();
+                burnAmountInput.value = '3.14';
+            } catch (error) {
+                console.error(error);
+                alert(`Erro: ${error.message}`);
+            } finally {
+                burnBtn.disabled = false;
+                burnBtn.textContent = 'Queimar Tokens';
+            }
+        }
+
+        async function transferTokens() {
+            if (!contract || !userAddress) { alert('Conecte sua carteira.'); return; }
+            const to = transferAddressInput.value.trim();
+            const amount = transferAmountInput.value;
+            if (!to || !ethers.utils.isAddress(to)) { alert('Endereço inválido.'); return; }
+            if (!amount || parseFloat(amount) <= 0) { alert('Quantidade inválida.'); return; }
+            try {
+                transferBtn.disabled = true;
+                transferBtn.textContent = 'Transferindo...';
+                const decimals = await contract.decimals();
+                const amountWei = parseAmount(amount, decimals);
+                const balance = await contract.balanceOf(userAddress);
+                if (balance.lt(amountWei)) { alert('Saldo insuficiente.'); return; }
+                const tx = await contract.transfer(to, amountWei);
+                await tx.wait();
+                alert(`Sucesso! ${amount} BSPI enviados.`);
+                await updateBalance();
+                transferAddressInput.value = '';
+                transferAmountInput.value = '3.14';
+            } catch (error) {
+                console.error(error);
+                alert(`Erro: ${error.message}`);
+            } finally {
+                transferBtn.disabled = false;
+                transferBtn.textContent = 'Transferir Tokens';
+            }
+        }
+
+        async function addTokenToMetaMask() {
+            if (!window.ethereum || !userAddress) { alert('Conecte a carteira.'); return; }
+            try {
+                const symbol = await contract.symbol();
+                const decimals = await contract.decimals();
+                await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: CONTRACT_ADDRESS,
+                            symbol: symbol,
+                            decimals: decimals,
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadUserHistory() {
+            if (!contract || !userAddress) { 
+                historyContainer.innerHTML = '<div class="loading">Conecte a carteira.</div>'; 
+                return; 
+            }
+            try {
+                const filterSent = contract.filters.Transfer(userAddress, null);
+                const filterReceived = contract.filters.Transfer(null, userAddress);
+                const filterBurn = contract.filters.TokensQueimados(userAddress);
+                const sent = await contract.queryFilter(filterSent, -10000);
+                const received = await contract.queryFilter(filterReceived, -10000);
+                const burns = await contract.queryFilter(filterBurn, -10000);
+                const all = [...sent, ...received, ...burns].sort((a,b)=>b.blockNumber-a.blockNumber);
+                const decimals = await contract.decimals();
+                historyContainer.innerHTML = '';
+                if (all.length === 0) {
+                    historyContainer.innerHTML = '<div class="loading">Nenhuma transação.</div>';
+                    return;
+                }
+                all.slice(0,15).forEach(tx => {
+                    let desc = '';
+                    if (tx.event === 'Transfer') {
+                        if (tx.args.from.toLowerCase() === userAddress.toLowerCase()) {
+                            desc = `Enviou ${parseFloat(formatAmount(tx.args.value, decimals)).toFixed(2)} BSPI para ${truncateAddress(tx.args.to)}`;
+                        } else {
+                            desc = `Recebeu ${parseFloat(formatAmount(tx.args.value, decimals)).toFixed(2)} BSPI de ${truncateAddress(tx.args.from)}`;
+                        }
+                    } else if (tx.event === 'TokensQueimados') {
+                        desc = `Queimou ${parseFloat(formatAmount(tx.args.quantidade, decimals)).toFixed(2)} BSPI`;
+                    }
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.textContent = `${desc} - bloco ${tx.blockNumber}`;
+                    historyContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error(error);
+                historyContainer.innerHTML = '<div class="error">Erro ao carregar.</div>';
+            }
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+                if (tabId === 'history' && userAddress) loadUserHistory();
+            });
+        });
+
+        // Event listeners
+        connectBtn.addEventListener('click', connectWallet);
+        addTokenBtn.addEventListener('click', addTokenToMetaMask);
+        burnBtn.addEventListener('click', burnTokens);
+        transferBtn.addEventListener('click', transferTokens);
+
+        window.addEventListener('load', () => updateBurnChart());
+
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    userAddress = accounts[0];
+                    connectBtn.textContent = `Conectado: ${truncateAddress(userAddress)}`;
+                    updateBalance();
+                } else {
+                    userAddress = null;
+                    connectBtn.textContent = 'Conectar Carteira';
+                    addTokenBtn.style.display = 'none';
+                    burnBtn.disabled = true;
+                    transferBtn.disabled = true;
+                    userBalanceEl.innerHTML = '0.00 <span class="stat-unit">BSPI</span>';
+                }
+            });
+            window.ethereum.on('chainChanged', () => window.location.reload());
+        }
+    </script>
+</body>
+</html>
